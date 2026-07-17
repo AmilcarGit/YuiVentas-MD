@@ -28,7 +28,7 @@ Cada persona que lo instale con su propio número puede personalizarlo por compl
 ## 🚀 Instalación
 
 ```bash
-git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
+git clone https://github.com/AmilcarGit/YuiVentas-MD.git
 cd YuiVentas-MD
 npm install
 npm start
