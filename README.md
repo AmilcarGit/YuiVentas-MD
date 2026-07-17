@@ -1,6 +1,6 @@
 # 🛍️ YuiVentas-MD
 
-###Bot En Desarrollo ᰔᩚ
+### Bot En Desarrollo ᰔᩚ
 
 Bot de WhatsApp para **Marketing y Ventas**, construido sobre [Baileys](https://github.com/WhiskeySockets/Baileys).
 Cada persona que lo instale con su propio número puede personalizarlo por completo **desde el mismo WhatsApp**, sin tocar código: nombre del negocio, catálogo de productos, mensajes de bienvenida, respuestas automáticas y envíos masivos.
