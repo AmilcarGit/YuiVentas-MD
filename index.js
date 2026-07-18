@@ -17,7 +17,7 @@ import { config } from "./config.js";
 import { loadPlugins } from "./pluginLoader.js";
 import { pasaFiltros, resolverNumeroReal } from "./middlewares.js";
 import { obtenerNegocio, yaSaludoA, marcarSaludado } from "./db/negocioDB.js";
-import { obtenerAjustes, asegurarPrimerOwner, agregarOwner } from "./db/ajustesDB.js";
+import { obtenerAjustes, asegurarPrimerOwner, agregarOwner, esGrupoActivo } from "./db/ajustesDB.js";
 import { buscarRespuesta } from "./db/faqDB.js";
 import { iniciarLimpiezaAutomatica } from "./limpieza.js";
 
@@ -234,6 +234,30 @@ async function startBot() {
     const esGrupo = chatId.endsWith("@g.us");
     const texto = body.trim();
 
+    // --- Enrutador de comandos (con prefijo configurable por WhatsApp;
+    // si el prefijo está vacío, los comandos se reconocen sin símbolo) ---
+    const { prefix } = obtenerAjustes();
+
+    let pluginEncontrado = null;
+    let sinPrefijo = "";
+    let args = [];
+
+    if (texto.startsWith(prefix)) {
+      sinPrefijo = texto.slice(prefix.length).trim();
+      const primeraPalabra = sinPrefijo.split(/\s+/)[0]?.toLowerCase();
+      args = sinPrefijo.split(/\s+/).slice(1);
+      pluginEncontrado = plugins.find((plugin) => plugin.command.includes(primeraPalabra)) || null;
+    }
+
+    // --- El bot está APAGADO en grupos por defecto. Solo responde ahí si
+    // el dueño lo activó con "activargrupo", o si el mensaje es
+    // justamente el comando para activarlo/desactivarlo/verlo. ---
+    if (esGrupo) {
+      const grupoActivo = esGrupoActivo(chatId);
+      const esComandoDeActivacion = pluginEncontrado?.bypassGrupoInactivo === true;
+      if (!grupoActivo && !esComandoDeActivacion) return;
+    }
+
     // --- Embudo de ventas: mensaje de bienvenida automático en el primer
     // contacto privado con el bot (no aplica a tus propios mensajes) ---
     if (!esGrupo && !msg.key.fromMe) {
@@ -245,33 +269,15 @@ async function startBot() {
       }
     }
 
-    // --- Enrutador de comandos (con prefijo configurable por WhatsApp;
-    // si el prefijo está vacío, los comandos se reconocen sin símbolo) ---
-    const { prefix } = obtenerAjustes();
-
-    if (texto.startsWith(prefix)) {
-      const sinPrefijo = texto.slice(prefix.length).trim();
-      const primeraPalabra = sinPrefijo.split(/\s+/)[0]?.toLowerCase();
-      const args = sinPrefijo.split(/\s+/).slice(1);
+    if (pluginEncontrado) {
       const context = { sender, chatId, body: sinPrefijo, allPlugins: plugins };
-
-      let comandoEncontrado = false;
-
-      for (const plugin of plugins) {
-        if (plugin.command.includes(primeraPalabra)) {
-          comandoEncontrado = true;
-          try {
-            const puedeContinuar = await pasaFiltros(sock, msg, plugin, context);
-            if (!puedeContinuar) break;
-            await plugin.run(sock, msg, args, context);
-          } catch (err) {
-            console.log(chalk.red(`❌ Error ejecutando el plugin ${plugin.fileName}:`), err);
-          }
-          break;
-        }
+      try {
+        const puedeContinuar = await pasaFiltros(sock, msg, pluginEncontrado, context);
+        if (puedeContinuar) await pluginEncontrado.run(sock, msg, args, context);
+      } catch (err) {
+        console.log(chalk.red(`❌ Error ejecutando el plugin ${pluginEncontrado.fileName}:`), err);
       }
-
-      if (comandoEncontrado) return;
+      return;
     }
 
     // --- Ningún comando coincidió: respuestas automáticas por palabra
