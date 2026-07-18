@@ -17,16 +17,38 @@ export default {
 
     if (comando === "setprefijo") {
       const nuevo = (args[0] || "").trim();
-      if (!nuevo || nuevo.includes(" ") || nuevo.length > 3) {
+      const sinPrefijo = ["ninguno", "vacio", "vacío", "none", "off"].includes(nuevo.toLowerCase());
+
+      if (!nuevo) {
         await sock.sendMessage(
           chatId,
-          { text: `❀ Uso: *${ajustes.prefix}setprefijo <símbolo>*\nEjemplo: *${ajustes.prefix}setprefijo !*\n(máximo 3 caracteres, sin espacios)` },
+          {
+            text:
+              `❀ Uso: *${ajustes.prefix}setprefijo <símbolo>*\nEjemplo: *${ajustes.prefix}setprefijo !*\n(máximo 3 caracteres, sin espacios)\n\n` +
+              `Para quitar el prefijo por completo (escribir los comandos directo, sin símbolo):\n*${ajustes.prefix}setprefijo ninguno*`,
+          },
           { quoted: msg }
         );
         return;
       }
-      actualizarAjustes({ prefix: nuevo });
-      await sock.sendMessage(chatId, { text: `✅ Prefijo actualizado. Ahora los comandos empiezan con: *${nuevo}*\nEjemplo: *${nuevo}menu*` }, { quoted: msg });
+
+      if (!sinPrefijo && (nuevo.includes(" ") || nuevo.length > 3)) {
+        await sock.sendMessage(chatId, { text: "❌ El prefijo debe tener máximo 3 caracteres y sin espacios." }, { quoted: msg });
+        return;
+      }
+
+      const valorFinal = sinPrefijo ? "" : nuevo;
+      actualizarAjustes({ prefix: valorFinal });
+
+      await sock.sendMessage(
+        chatId,
+        {
+          text: sinPrefijo
+            ? `✅ Prefijo desactivado. Ahora los comandos se escriben directo, sin símbolo.\nEjemplo: *menu*, *catalogo*`
+            : `✅ Prefijo actualizado. Ahora los comandos empiezan con: *${valorFinal}*\nEjemplo: *${valorFinal}menu*`,
+        },
+        { quoted: msg }
+      );
       return;
     }
 
@@ -80,7 +102,7 @@ export default {
 
     // "ajustes" -> mostrar todo
     let texto = `⚙️ *AJUSTES DEL BOT*\n━━━━━━━━━━━━━━━━━━\n\n`;
-    texto += `🔣 Prefijo: *${ajustes.prefix}*\n`;
+    texto += `🔣 Prefijo: *${ajustes.prefix || "(ninguno, comandos directos)"}*\n`;
     texto += `💰 Moneda: *${ajustes.monedaSimbolo}*\n`;
     texto += `👑 Dueños: ${ajustes.owners.join(", ")}\n\n`;
     texto += `Para cambiar:\n`;
