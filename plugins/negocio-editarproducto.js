@@ -1,4 +1,4 @@
-import { config } from "../config.js";
+import { obtenerAjustes } from "../db/ajustesDB.js";
 import { obtenerProducto, editarProducto, eliminarProducto } from "../db/productosDB.js";
 
 export default {
@@ -8,12 +8,13 @@ export default {
   ownerOnly: true,
   run: async (sock, msg, args, context) => {
     const { chatId, body } = context;
+    const ajustes = obtenerAjustes();
     const comando = body.trim().split(/\s+/)[0].toLowerCase();
 
     if (comando === "eliminarproducto" || comando === "delproducto") {
       const id = (args[0] || "").toLowerCase();
       if (!id) {
-        await sock.sendMessage(chatId, { text: `❀ Uso: *${config.prefix}eliminarproducto <ID>*` }, { quoted: msg });
+        await sock.sendMessage(chatId, { text: `❀ Uso: *${ajustes.prefix}eliminarproducto <ID>*` }, { quoted: msg });
         return;
       }
       const ok = eliminarProducto(id);
@@ -38,11 +39,11 @@ export default {
         chatId,
         {
           text:
-            `❀ Uso: *${config.prefix}editarproducto <ID> | campo | valor*\n\n` +
+            `❀ Uso: *${ajustes.prefix}editarproducto <ID> | campo | valor*\n\n` +
             `Campos válidos: ${camposValidos.join(", ")}\n\n` +
             `Ejemplos:\n` +
-            `*${config.prefix}editarproducto playera-azul | precio | 50*\n` +
-            `*${config.prefix}editarproducto playera-azul | activo | no*  (la oculta del catálogo)`,
+            `*${ajustes.prefix}editarproducto playera-azul | precio | 50*\n` +
+            `*${ajustes.prefix}editarproducto playera-azul | activo | no*  (la oculta del catálogo)`,
         },
         { quoted: msg }
       );
