@@ -1,4 +1,4 @@
-import { config } from "../config.js";
+import { obtenerAjustes } from "../db/ajustesDB.js";
 import { agregarContacto, agregarContactosMasivo, quitarContacto, obtenerLista, listarListas } from "../db/contactosDB.js";
 
 export default {
@@ -8,6 +8,7 @@ export default {
   ownerOnly: true,
   run: async (sock, msg, args, context) => {
     const { chatId, body } = context;
+    const ajustes = obtenerAjustes();
     const comando = body.trim().split(/\s+/)[0].toLowerCase();
 
     if (comando === "addcontacto") {
@@ -15,7 +16,7 @@ export default {
       const lista = (args[1] || "general").toLowerCase();
 
       if (!numero) {
-        await sock.sendMessage(chatId, { text: `❀ Uso: *${config.prefix}addcontacto <numero> [lista]*` }, { quoted: msg });
+        await sock.sendMessage(chatId, { text: `❀ Uso: *${ajustes.prefix}addcontacto <numero> [lista]*` }, { quoted: msg });
         return;
       }
 
@@ -73,9 +74,9 @@ export default {
     for (const nombre of nombres) {
       texto += `▸ *${nombre}*: ${obtenerLista(nombre).length} contacto(s)\n`;
     }
-    texto += `\n➕ Agregar: *${config.prefix}addcontacto <numero> [lista]*\n`;
-    texto += `➖ Quitar: *${config.prefix}delcontacto <numero> [lista]*\n`;
-    texto += `📥 Importar miembros de un grupo: *${config.prefix}importargrupo [lista]*`;
+    texto += `\n➕ Agregar: *${ajustes.prefix}addcontacto <numero> [lista]*\n`;
+    texto += `➖ Quitar: *${ajustes.prefix}delcontacto <numero> [lista]*\n`;
+    texto += `📥 Importar miembros de un grupo: *${ajustes.prefix}importargrupo [lista]*`;
 
     await sock.sendMessage(chatId, { text: texto }, { quoted: msg });
   },
