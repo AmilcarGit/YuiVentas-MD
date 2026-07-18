@@ -6,6 +6,12 @@
 
 Catálogo · Carrito · Pedidos · Envíos masivos · Respuestas automáticas — todo administrable **desde el propio WhatsApp**, sin tocar una sola línea de código.
 
+[![Node.js](https://img.shields.io/badge/Node.js-v18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Baileys](https://img.shields.io/badge/WhatsApp-Baileys-25D366?logo=whatsapp&logoColor=white)](https://github.com/WhiskeySockets/Baileys)
+[![License: MIT](https://img.shields.io/badge/Licencia-MIT-blue.svg)](#licencia)
+[![Runs on Termux](https://img.shields.io/badge/Corre%20en-Termux-000000?logo=termux&logoColor=white)](#-dónde-puedes-instalarlo)
+[![Docker Ready](https://img.shields.io/badge/Docker-listo-2496ED?logo=docker&logoColor=white)](#-dónde-puedes-instalarlo)
+
 </div>
 
 ---
@@ -14,9 +20,14 @@ Catálogo · Carrito · Pedidos · Envíos masivos · Respuestas automáticas �
 
 - [¿Qué es esto?](#qué-es-esto)
 - [Características](#características)
-- [Requisitos](#requisitos)
-- [Instalación](#instalación)
-- [Primera configuración](#primera-configuración)
+- [📲 Dónde puedes instalarlo](#-dónde-puedes-instalarlo)
+  - [Android (Termux)](#-android-termux)
+  - [VPS / Servidor Linux](#️-vps--servidor-linux-ubuntudebian)
+  - [Windows](#-windows)
+  - [macOS](#-macos)
+  - [Hosting en la nube (Railway, Render, etc.)](#️-hosting-en-la-nube-railway-render-etc)
+  - [Docker](#-docker)
+- [Primer arranque](#primer-arranque)
 - [Cómo administrarlo](#cómo-administrarlo)
 - [Referencia de comandos](#referencia-de-comandos)
 - [Estructura del proyecto](#estructura-del-proyecto)
@@ -53,24 +64,117 @@ No es un bot genérico: nace específicamente para negocios pequeños y medianos
 
 ---
 
-## Requisitos
+## 📲 Dónde puedes instalarlo
 
-- [Node.js](https://nodejs.org/) v18 o superior
-- Un número de WhatsApp para vincular como el bot (puede ser tu número personal o uno dedicado al negocio)
-- Conexión a internet estable donde vaya a correr el bot (celular con Termux, VPS, PC, etc.)
+YuiVentas-MD no tiene dependencias nativas pesadas — es JavaScript puro sobre Node.js — así que corre prácticamente en cualquier lado: tu celular, tu PC, o un servidor en la nube 24/7. Elige tu plataforma:
 
----
+### 📱 Android (Termux)
 
-## Instalación
+La forma más popular para tener el bot corriendo directo desde el celular, gratis.
 
 ```bash
+pkg update && pkg upgrade -y
+pkg install nodejs-lts git -y
+
 git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
 cd YuiVentas-MD
 npm install
 npm start
 ```
 
-Al iniciar por primera vez vas a ver dos preguntas en la terminal:
+> 💡 Para que el bot siga corriendo aunque bloquees la pantalla, desactiva la optimización de batería para Termux y usa `termux-wake-lock` antes de `npm start`.
+
+### 🖥️ VPS / Servidor Linux (Ubuntu/Debian)
+
+La opción más estable para un negocio real: el bot corre 24/7 sin depender de tu celular.
+
+```bash
+sudo apt update && sudo apt install -y curl git
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
+cd YuiVentas-MD
+npm install
+
+# Instala PM2 para que el bot se reinicie solo si se cae o si reinicias el servidor
+sudo npm install -g pm2
+pm2 start index.js --name yuiventas
+pm2 save
+pm2 startup
+```
+
+Comandos útiles de PM2: `pm2 logs yuiventas` (ver la consola), `pm2 restart yuiventas`, `pm2 stop yuiventas`.
+
+### 🪟 Windows
+
+1. Instala [Node.js LTS](https://nodejs.org/) y [Git](https://git-scm.com/download/win).
+2. Abre PowerShell o CMD en la carpeta donde quieras el proyecto:
+
+```powershell
+git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
+cd YuiVentas-MD
+npm install
+npm start
+```
+
+### 🍎 macOS
+
+```bash
+brew install node git
+
+git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
+cd YuiVentas-MD
+npm install
+npm start
+```
+
+### ☁️ Hosting en la nube (Railway, Render, etc.)
+
+Si quieres que el bot viva en un servicio administrado en vez de un servidor propio:
+
+1. Sube tu copia del proyecto a un repositorio de GitHub (siguiendo las instrucciones de este mismo README).
+2. Crea un nuevo servicio en la plataforma que elijas, apuntando a ese repositorio, con `npm install` como *build command* y `npm start` como *start command*.
+3. **Agrega un volumen o disco persistente** montado en `/session` y `/database` — si no, el bot pierde la vinculación de WhatsApp y todo el negocio (productos, pedidos) cada vez que el servicio se reinicia.
+4. La primera vinculación (QR o código) normalmente se hace revisando los *logs* en vivo del servicio, ya que no tienes una terminal interactiva como en Termux o un VPS.
+
+> ⚠️ Algunos planes gratuitos "duermen" el proceso tras un rato de inactividad, lo cual corta la conexión de WhatsApp. Para un bot de ventas que debe responder en cualquier momento, se recomienda un plan que mantenga el proceso siempre activo.
+
+### 🐳 Docker
+
+El proyecto incluye un `Dockerfile` listo para usar.
+
+```bash
+git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
+cd YuiVentas-MD
+
+docker build -t yuiventas-md .
+
+# -it es importante: la primera vinculación pide el código/QR por consola
+docker run -it --name yuiventas \
+  -v "$(pwd)/session:/app/session" \
+  -v "$(pwd)/database:/app/database" \
+  yuiventas-md
+```
+
+Una vez vinculado, para correrlo en segundo plano en los siguientes arranques:
+
+```bash
+docker start yuiventas
+docker logs -f yuiventas
+```
+
+---
+
+## Primer arranque
+
+Sin importar en qué plataforma lo instalaste, la primera vez que corres `npm start` (o `docker run`) verás lo mismo:
+
+```bash
+npm start
+```
+
+Vas a ver dos preguntas en la terminal:
 
 1. **¿Quieres agregar OTRO número como dueño del bot además del tuyo?**
    Déjalo vacío si vas a administrar el negocio tú solo, o escribe el número (con código de país, sin `+`) de un socio o encargado.
