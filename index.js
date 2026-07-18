@@ -17,6 +17,7 @@ import { config } from "./config.js";
 import { loadPlugins } from "./pluginLoader.js";
 import { pasaFiltros, resolverNumeroReal } from "./middlewares.js";
 import { obtenerNegocio, yaSaludoA, marcarSaludado } from "./db/negocioDB.js";
+import { obtenerAjustes, asegurarPrimerOwner } from "./db/ajustesDB.js";
 import { buscarRespuesta } from "./db/faqDB.js";
 import { iniciarLimpiezaAutomatica } from "./limpieza.js";
 
@@ -153,6 +154,18 @@ async function startBot() {
     } else if (connection === "open") {
       console.log(chalk.greenBright(`\n✅ ${config.botName} conectado y listo para vender 🛍️\n`));
 
+      // El número con el que se vinculó el bot se vuelve dueño automáticamente
+      // si todavía no hay ningún dueño registrado (primera vez que se instala).
+      const numeroBot = String(sock.user?.id || "").split("@")[0].split(":")[0].replace(/\D/g, "");
+      if (numeroBot && asegurarPrimerOwner(numeroBot)) {
+        console.log(chalk.greenBright(`👑 ${numeroBot} registrado como dueño del bot automáticamente.`));
+        sock.sendMessage(`${numeroBot}@s.whatsapp.net`, {
+          text:
+            `👑 *¡Listo!* Este número (${numeroBot}) quedó registrado como dueño de *${config.botName}*.\n\n` +
+            `Escribe *.menu* para ver todos los comandos, o *.ajustes* para configurar prefijo, moneda y otros dueños.`,
+        }).catch(() => {});
+      }
+
       (async () => {
         try {
           const todosLosGrupos = await sock.groupFetchAllParticipating();
@@ -201,9 +214,11 @@ async function startBot() {
       }
     }
 
-    // --- Enrutador de comandos (con prefijo) ---
-    if (texto.startsWith(config.prefix)) {
-      const sinPrefijo = texto.slice(config.prefix.length).trim();
+    // --- Enrutador de comandos (con prefijo configurable por WhatsApp) ---
+    const { prefix } = obtenerAjustes();
+
+    if (texto.startsWith(prefix)) {
+      const sinPrefijo = texto.slice(prefix.length).trim();
       const primeraPalabra = sinPrefijo.split(/\s+/)[0]?.toLowerCase();
       const args = sinPrefijo.split(/\s+/).slice(1);
       const context = { sender, chatId, body: sinPrefijo, allPlugins: plugins };
