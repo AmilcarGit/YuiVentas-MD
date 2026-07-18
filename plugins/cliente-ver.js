@@ -1,5 +1,5 @@
 import fs from "fs";
-import { config } from "../config.js";
+import { obtenerAjustes } from "../db/ajustesDB.js";
 import { obtenerProducto } from "../db/productosDB.js";
 
 export default {
@@ -8,12 +8,13 @@ export default {
   description: "Muestra el detalle de un producto. Uso: ver <ID>",
   run: async (sock, msg, args, context) => {
     const { chatId } = context;
+    const ajustes = obtenerAjustes();
     const id = (args[0] || "").toLowerCase();
 
     if (!id) {
       await sock.sendMessage(
         chatId,
-        { text: `❀ Uso: *${config.prefix}ver <ID>*\nRevisa los IDs con *${config.prefix}catalogo*` },
+        { text: `❀ Uso: *${ajustes.prefix}ver <ID>*\nRevisa los IDs con *${ajustes.prefix}catalogo*` },
         { quoted: msg }
       );
       return;
@@ -27,9 +28,9 @@ export default {
 
     let texto = `🔹 *${producto.nombre}*\n\n`;
     if (producto.descripcion) texto += `${producto.descripcion}\n\n`;
-    texto += `💵 Precio: ${config.monedaSimbolo}${producto.precio.toFixed(2)}\n`;
+    texto += `💵 Precio: ${ajustes.monedaSimbolo}${producto.precio.toFixed(2)}\n`;
     if (producto.stock !== null) texto += `📦 Stock: ${producto.stock}\n`;
-    texto += `\n🛒 Para agregarlo escribe:\n*${config.prefix}agregar ${producto.id} 1*`;
+    texto += `\n🛒 Para agregarlo escribe:\n*${ajustes.prefix}agregar ${producto.id} 1*`;
 
     if (producto.imagen && fs.existsSync(producto.imagen)) {
       await sock.sendMessage(
