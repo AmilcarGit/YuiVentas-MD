@@ -183,10 +183,20 @@ async function startBot() {
     if (type !== "notify") return;
 
     const msg = messages[0];
-    if (!msg?.message || msg.key.fromMe) return;
+    if (!msg?.message) return;
 
     const chatId = msg.key.remoteJid;
     const sender = msg.key.participant || msg.key.remoteJid;
+
+    // El bot corre sobre tu propio número, así que sus propios mensajes
+    // salientes también llegan aquí (fromMe: true). Los ignoramos en
+    // TODOS los chats, EXCEPTO en tu chat "Mensaje para mí" (contigo
+    // mismo), donde sí queremos que tus propios mensajes se traten como
+    // comandos — así puedes administrar el bot escribiéndote a ti mismo.
+    const numeroBot = String(sock.user?.id || "").split("@")[0].split(":")[0];
+    const esChatConmigoMismo = chatId === `${numeroBot}@s.whatsapp.net`;
+
+    if (msg.key.fromMe && !esChatConmigoMismo) return;
 
     const body =
       msg.message.conversation ||
@@ -204,8 +214,8 @@ async function startBot() {
     const texto = body.trim();
 
     // --- Embudo de ventas: mensaje de bienvenida automático en el primer
-    // contacto privado con el bot ---
-    if (!esGrupo) {
+    // contacto privado con el bot (no aplica a tus propios mensajes) ---
+    if (!esGrupo && !msg.key.fromMe) {
       const numeroReal = await resolverNumeroReal(sock, sender, msg);
       if (!yaSaludoA(numeroReal)) {
         marcarSaludado(numeroReal);
@@ -238,7 +248,11 @@ async function startBot() {
       return;
     }
 
-    // --- Sin prefijo: respuestas automáticas por palabra clave (FAQ) ---
+    // --- Sin prefijo: respuestas automáticas por palabra clave (FAQ).
+    // Nunca se dispara con los propios mensajes del bot, para no entrar
+    // en bucle si la respuesta configurada contiene su propia palabra clave. ---
+    if (msg.key.fromMe) return;
+
     const respuestaFAQ = buscarRespuesta(texto);
     if (respuestaFAQ) {
       await enviarConReintento(sock, chatId, { text: respuestaFAQ });
