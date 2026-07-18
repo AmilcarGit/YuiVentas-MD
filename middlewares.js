@@ -1,7 +1,7 @@
-import { config } from "./config.js";
+import { esOwner as esOwnerDinamico } from "./db/ajustesDB.js";
 
 export function esOwner(numero) {
-  return config.ownerNumbers.includes(numero);
+  return esOwnerDinamico(numero);
 }
 
 export async function resolverNumeroReal(sock, sender, msg = null) {
