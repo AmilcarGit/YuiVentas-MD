@@ -1,4 +1,4 @@
-import { config } from "../config.js";
+import { obtenerAjustes } from "../db/ajustesDB.js";
 import { crearProducto } from "../db/productosDB.js";
 
 export default {
@@ -8,6 +8,7 @@ export default {
   ownerOnly: true,
   run: async (sock, msg, args, context) => {
     const { chatId, body } = context;
+    const ajustes = obtenerAjustes();
     const contenido = body.trim().split(/\s+/).slice(1).join(" ");
     const partes = contenido.split("|").map((p) => p.trim());
     const [nombre, precioTexto, descripcion, stockTexto] = partes;
@@ -17,9 +18,9 @@ export default {
         chatId,
         {
           text:
-            `❀ Uso:\n*${config.prefix}addproducto Nombre | Precio | Descripción | Stock*\n\n` +
+            `❀ Uso:\n*${ajustes.prefix}addproducto Nombre | Precio | Descripción | Stock*\n\n` +
             `El Stock es opcional (déjalo vacío para stock ilimitado).\n\n` +
-            `Ejemplo:\n*${config.prefix}addproducto Playera azul | 45.00 | Talla M-L, 100% algodón | 10*`,
+            `Ejemplo:\n*${ajustes.prefix}addproducto Playera azul | 45.00 | Talla M-L, 100% algodón | 10*`,
         },
         { quoted: msg }
       );
@@ -47,9 +48,9 @@ export default {
         text:
           `✅ Producto agregado al catálogo.\n\n` +
           `🔹 *${producto.nombre}*\n` +
-          `💵 ${config.monedaSimbolo}${producto.precio.toFixed(2)}\n` +
+          `💵 ${ajustes.monedaSimbolo}${producto.precio.toFixed(2)}\n` +
           `🔑 ID: \`${producto.id}\`\n\n` +
-          `📸 Para ponerle foto, responde a una imagen con:\n*${config.prefix}fotoproducto ${producto.id}*`,
+          `📸 Para ponerle foto, responde a una imagen con:\n*${ajustes.prefix}fotoproducto ${producto.id}*`,
       },
       { quoted: msg }
     );
