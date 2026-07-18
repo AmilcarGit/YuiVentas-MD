@@ -1,3 +1,4 @@
+
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const {
@@ -180,10 +181,19 @@ async function startBot() {
   sock.ev.on("creds.update", saveCreds);
 
   sock.ev.on("messages.upsert", async ({ messages, type }) => {
-    if (type !== "notify") return;
+    // Los mensajes que te envías a ti mismo (chat "Mensaje para mí") a
+    // veces llegan como type "append" en vez de "notify". Aceptamos
+    // ambos, pero con un filtro de antigüedad más abajo para no
+    // reprocesar historial viejo cada vez que el bot se reconecta.
+    if (type !== "notify" && type !== "append") return;
 
     const msg = messages[0];
     if (!msg?.message) return;
+
+    // Ignorar mensajes viejos (historial sincronizado al conectar/reconectar).
+    // Solo procesamos mensajes de los últimos 60 segundos.
+    const timestampMsg = Number(msg.messageTimestamp) * 1000;
+    if (timestampMsg && Date.now() - timestampMsg > 60_000) return;
 
     const chatId = msg.key.remoteJid;
     const sender = msg.key.participant || msg.key.remoteJid;
