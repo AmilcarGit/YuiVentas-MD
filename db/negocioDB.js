@@ -6,6 +6,7 @@ const store = crearStore("negocio.json", {
     "¡Hola! 👋 Bienvenido/a. Soy el asistente automático y puedo ayudarte a ver nuestro catálogo y tomar tu pedido.\n\nEscribe *catalogo* para ver los productos disponibles.",
   infoPago: "Aún no configuro mis métodos de pago. Escribe *setpago* para configurarlos.",
   menuIntro: "", // texto personalizado que se muestra arriba del menú de clientes (vacío = usa el saludo por defecto)
+  menuImagen: "", // ruta a una imagen personalizada para el menú (vacío = usa la imagen por defecto)
   contactosVistos: [], // números que ya recibieron el mensaje de bienvenida
 });
 
