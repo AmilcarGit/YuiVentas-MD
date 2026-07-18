@@ -7,7 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const MENU_IMAGE_PATH = path.join(__dirname, "..", "assets", "menu.jpg");
+const MENU_IMAGE_PATH = path.join(__dirname, "..", "assets", "menu1.jpg");
 
 function obtenerImagenMenu(negocio) {
   if (negocio.menuImagen) {
