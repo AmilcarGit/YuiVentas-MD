@@ -4,7 +4,7 @@ const { downloadMediaMessage } = require("@whiskeysockets/baileys");
 
 import fs from "fs";
 import path from "path";
-import { config } from "../config.js";
+import { obtenerAjustes } from "../db/ajustesDB.js";
 import { obtenerProducto, establecerImagen } from "../db/productosDB.js";
 
 export default {
@@ -14,10 +14,11 @@ export default {
   ownerOnly: true,
   run: async (sock, msg, args, context) => {
     const { chatId } = context;
+    const ajustes = obtenerAjustes();
     const id = (args[0] || "").toLowerCase();
 
     if (!id) {
-      await sock.sendMessage(chatId, { text: `❀ Uso: responde a una imagen con *${config.prefix}fotoproducto <ID>*` }, { quoted: msg });
+      await sock.sendMessage(chatId, { text: `❀ Uso: responde a una imagen con *${ajustes.prefix}fotoproducto <ID>*` }, { quoted: msg });
       return;
     }
 
