@@ -102,8 +102,20 @@ async function startBot() {
   });
 
   if (usePairingCode) {
+    const otroOwner = await question(
+      chalk.yellow(
+        "\n👑 ¿Quieres agregar OTRO número como dueño del bot además del tuyo? (con código de país, sin + ni espacios)\n" +
+          "Déjalo vacío y presiona Enter para omitir esto.\nNúmero: "
+      )
+    );
+    const numeroOwnerExtra = otroOwner.trim().replace(/\D/g, "");
+    if (numeroOwnerExtra) {
+      agregarOwner(numeroOwnerExtra);
+      console.log(chalk.greenBright(`👑 ${numeroOwnerExtra} quedará registrado como dueño del bot en cuanto conecte.\n`));
+    }
+
     const metodo = await question(
-      chalk.yellow("\n¿Cómo quieres vincular el bot?\n1) Código de 8 dígitos\n2) Código QR\nElige 1 o 2: ")
+      chalk.yellow("¿Cómo quieres vincular el bot?\n1) Código de 8 dígitos\n2) Código QR\nElige 1 o 2: ")
     );
 
     if (metodo.trim() === "1") {
@@ -129,18 +141,6 @@ async function startBot() {
       setTimeout(() => pedirCodigoConReintentos(), 2000);
     } else {
       console.log(chalk.yellow("\nEscanea el código QR que aparecerá arriba con WhatsApp > Dispositivos vinculados.\n"));
-    }
-
-    const otroOwner = await question(
-      chalk.yellow(
-        "\n👑 ¿Quieres agregar OTRO número como dueño del bot además del tuyo? (con código de país, sin + ni espacios)\n" +
-          "Déjalo vacío y presiona Enter para omitir esto.\nNúmero: "
-      )
-    );
-    const numeroOwnerExtra = otroOwner.trim().replace(/\D/g, "");
-    if (numeroOwnerExtra) {
-      agregarOwner(numeroOwnerExtra);
-      console.log(chalk.greenBright(`👑 ${numeroOwnerExtra} quedará registrado como dueño del bot en cuanto conecte.`));
     }
   }
 
