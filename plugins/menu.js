@@ -24,7 +24,7 @@ function menuCliente(p, negocio) {
   let t = `╭─────────────────────╮\n`;
   t += `   🛍️ *${negocio.nombre.toUpperCase()}*\n`;
   t += `╰─────────────────────╯\n\n`;
-  t += `¡Hola! Así puedes comprar con nosotros 👇\n\n`;
+  t += negocio.menuIntro ? `${negocio.menuIntro}\n\n` : `¡Hola! Así puedes comprar con nosotros 👇\n\n`;
 
   t += `🗂️ *VER PRODUCTOS*\n`;
   t += `  ${p}catalogo — ver todo lo disponible\n`;
@@ -72,6 +72,7 @@ function menuDueno(p, negocio) {
   t += `  ${p}setnegocio <nombre>\n`;
   t += `  ${p}setbienvenida <mensaje>\n`;
   t += `  ${p}setpago <datos>\n`;
+  t += `  ${p}setmenu <texto> — personaliza el menú de clientes\n`;
   t += `  ${p}negocio — ver configuración actual\n\n`;
 
   t += `🔧 *AJUSTES DEL BOT*\n`;
