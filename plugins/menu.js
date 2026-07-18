@@ -1,6 +1,7 @@
 import { config } from "../config.js";
-import { obtenerAjustes } from "../db/ajustesDB.js";
+import { obtenerAjustes, esOwner } from "../db/ajustesDB.js";
 import { obtenerNegocio } from "../db/negocioDB.js";
+import { resolverNumeroReal } from "../middlewares.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -19,44 +20,83 @@ function obtenerImagenMenu() {
   }
 }
 
+function menuCliente(p, negocio) {
+  let t = `╭─────────────────────╮\n`;
+  t += `   🛍️ *${negocio.nombre.toUpperCase()}*\n`;
+  t += `╰─────────────────────╯\n\n`;
+  t += `¡Hola! Así puedes comprar con nosotros 👇\n\n`;
+
+  t += `🗂️ *VER PRODUCTOS*\n`;
+  t += `  ${p}catalogo — ver todo lo disponible\n`;
+  t += `  ${p}ver <ID> — ver detalle de un producto\n\n`;
+
+  t += `🛒 *TU CARRITO*\n`;
+  t += `  ${p}agregar <ID> <cant> — agregar producto\n`;
+  t += `  ${p}carrito — ver lo que llevas\n`;
+  t += `  ${p}quitar <ID> — quitar un producto\n`;
+  t += `  ${p}vaciarcarrito — vaciar todo\n\n`;
+
+  t += `✅ *FINALIZAR COMPRA*\n`;
+  t += `  ${p}confirmar — confirmar tu pedido\n\n`;
+
+  t += `─────────────────────\n`;
+  t += `💬 ¿Dudas? Solo escríbenos.`;
+  return t;
+}
+
+function menuDueno(p, negocio) {
+  let t = `╭─────────────────────╮\n`;
+  t += `   ⚙️ *PANEL DEL NEGOCIO*\n`;
+  t += `   ${negocio.nombre}\n`;
+  t += `╰─────────────────────╯\n\n`;
+
+  t += `🗂️ *PRODUCTOS*\n`;
+  t += `  ${p}addproducto Nombre | Precio | Desc | Stock\n`;
+  t += `  ${p}editarproducto <ID> | campo | valor\n`;
+  t += `  ${p}eliminarproducto <ID>\n`;
+  t += `  ${p}fotoproducto <ID>  (responde a una imagen)\n\n`;
+
+  t += `📦 *PEDIDOS*\n`;
+  t += `  ${p}pedidos — ver pedidos activos\n`;
+  t += `  ${p}pedidos <ID> <estado> — cambiar estado\n\n`;
+
+  t += `📣 *MARKETING*\n`;
+  t += `  ${p}broadcast [lista] <mensaje> — envío masivo\n`;
+  t += `  ${p}addcontacto / delcontacto <numero> [lista]\n`;
+  t += `  ${p}listas — ver tus listas de contactos\n`;
+  t += `  ${p}importargrupo [lista] — importar un grupo\n`;
+  t += `  ${p}addfaq clave | respuesta — auto-respuesta\n`;
+  t += `  ${p}delfaq clave / ${p}verfaq\n\n`;
+
+  t += `🏷️ *NEGOCIO*\n`;
+  t += `  ${p}setnegocio <nombre>\n`;
+  t += `  ${p}setbienvenida <mensaje>\n`;
+  t += `  ${p}setpago <datos>\n`;
+  t += `  ${p}negocio — ver configuración actual\n\n`;
+
+  t += `🔧 *AJUSTES DEL BOT*\n`;
+  t += `  ${p}setprefijo <símbolo>\n`;
+  t += `  ${p}setmoneda <símbolo>\n`;
+  t += `  ${p}addowner / delowner <numero>\n`;
+  t += `  ${p}ajustes — ver todo\n\n`;
+
+  t += `─────────────────────\n`;
+  t += `Tus clientes solo ven el menú de compra 🙂`;
+  return t;
+}
+
 export default {
   command: ["menu", "help", "ayuda"],
   category: "General",
   description: "Muestra el menú de comandos.",
   run: async (sock, msg, args, context) => {
-    const { chatId } = context;
+    const { chatId, sender } = context;
     const ajustes = obtenerAjustes();
     const negocio = obtenerNegocio();
     const p = ajustes.prefix;
 
-    let texto = `🛍️ *${negocio.nombre.toUpperCase()}*\n`;
-    texto += `Bot de ventas — ${config.botName}\n`;
-    texto += `━━━━━━━━━━━━━━━━━━\n\n`;
-
-    texto += `*🛒 PARA CLIENTES*\n`;
-    texto += `▸ ${p}catalogo — ver productos\n`;
-    texto += `▸ ${p}ver <ID> — detalle de un producto\n`;
-    texto += `▸ ${p}agregar <ID> <cant> — agregar al carrito\n`;
-    texto += `▸ ${p}carrito — ver tu carrito\n`;
-    texto += `▸ ${p}quitar <ID> — quitar del carrito\n`;
-    texto += `▸ ${p}vaciarcarrito — vaciar carrito\n`;
-    texto += `▸ ${p}confirmar — confirmar pedido\n\n`;
-
-    texto += `*⚙️ SOLO DUEÑO DEL NEGOCIO*\n`;
-    texto += `▸ ${p}addproducto Nombre | Precio | Desc | Stock\n`;
-    texto += `▸ ${p}editarproducto <ID> | campo | valor\n`;
-    texto += `▸ ${p}eliminarproducto <ID>\n`;
-    texto += `▸ ${p}fotoproducto <ID> (responde a una imagen)\n`;
-    texto += `▸ ${p}pedidos — ver pedidos activos\n`;
-    texto += `▸ ${p}pedidos <ID> <estado> — actualizar estado\n`;
-    texto += `▸ ${p}broadcast [lista] <mensaje> — envío masivo\n`;
-    texto += `▸ ${p}addcontacto / delcontacto / listas / importargrupo\n`;
-    texto += `▸ ${p}setnegocio / setbienvenida / setpago / negocio\n`;
-    texto += `▸ ${p}addfaq / delfaq / verfaq — respuestas automáticas\n`;
-    texto += `▸ ${p}ajustes — ver/cambiar prefijo, moneda y dueños\n\n`;
-
-    texto += `━━━━━━━━━━━━━━━━━━\n`;
-    texto += `Prefijo de comandos: *${p}*`;
+    const numero = await resolverNumeroReal(sock, sender, msg);
+    const texto = esOwner(numero) ? menuDueno(p, negocio) : menuCliente(p, negocio);
 
     const imagen = obtenerImagenMenu();
     if (imagen) {
