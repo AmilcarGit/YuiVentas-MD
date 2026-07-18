@@ -2,9 +2,9 @@ import { obtenerAjustes } from "../db/ajustesDB.js";
 import { obtenerNegocio, actualizarNegocio } from "../db/negocioDB.js";
 
 export default {
-  command: ["setnegocio", "setbienvenida", "setpago", "negocio"],
+  command: ["setnegocio", "setbienvenida", "setpago", "setmenu", "negocio"],
   category: "Negocio",
-  description: "Configura el nombre del negocio, el mensaje de bienvenida y los datos de pago.",
+  description: "Configura el nombre del negocio, la bienvenida, los datos de pago y el texto del menú.",
   ownerOnly: true,
   run: async (sock, msg, args, context) => {
     const { chatId, body } = context;
@@ -42,14 +42,41 @@ export default {
       return;
     }
 
+    if (comando === "setmenu") {
+      if (!texto) {
+        await sock.sendMessage(
+          chatId,
+          {
+            text:
+              `❀ Uso: *${ajustes.prefix}setmenu <texto>*\n` +
+              `Ejemplo: *${ajustes.prefix}setmenu ¡Bienvenido a Mi Tienda! 🎉 Tenemos envíos a todo el país.*\n\n` +
+              `Ese texto aparece arriba cuando un cliente escribe *menu*.\n` +
+              `Escribe *${ajustes.prefix}setmenu default* para volver al texto de siempre.`,
+          },
+          { quoted: msg }
+        );
+        return;
+      }
+
+      const valorFinal = texto.toLowerCase() === "default" ? "" : texto;
+      actualizarNegocio({ menuIntro: valorFinal });
+      await sock.sendMessage(
+        chatId,
+        { text: valorFinal ? "✅ Texto del menú actualizado. Escribe *menu* para verlo." : "✅ Vuelto al texto de menú por defecto." },
+        { quoted: msg }
+      );
+      return;
+    }
+
     // "negocio" -> mostrar configuración actual
     const negocio = obtenerNegocio();
     let resumen = `⚙️ *CONFIGURACIÓN DEL NEGOCIO*\n━━━━━━━━━━━━━━━━━━\n\n`;
     resumen += `🏷️ Nombre: ${negocio.nombre}\n\n`;
     resumen += `👋 Bienvenida:\n${negocio.bienvenida}\n\n`;
+    resumen += `📋 Texto del menú:\n${negocio.menuIntro || "(usando el predeterminado)"}\n\n`;
     resumen += `💳 Datos de pago:\n${negocio.infoPago}\n\n`;
     resumen += `━━━━━━━━━━━━━━━━━━\n`;
-    resumen += `Para cambiar:\n*${ajustes.prefix}setnegocio <nombre>*\n*${ajustes.prefix}setbienvenida <mensaje>*\n*${ajustes.prefix}setpago <datos>*`;
+    resumen += `Para cambiar:\n*${ajustes.prefix}setnegocio <nombre>*\n*${ajustes.prefix}setbienvenida <mensaje>*\n*${ajustes.prefix}setpago <datos>*\n*${ajustes.prefix}setmenu <texto>*`;
 
     await sock.sendMessage(chatId, { text: resumen }, { quoted: msg });
   },
