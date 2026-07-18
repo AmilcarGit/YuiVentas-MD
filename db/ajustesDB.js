@@ -2,7 +2,7 @@ import { crearStore } from "./jsonDB.js";
 
 const store = crearStore("ajustes.json", {
   owners: [], // números (solo dígitos) que pueden usar comandos de dueño
-  prefix: ".",
+  prefix: "", // vacío = comandos sin símbolo, ej. "catalogo" en vez de ".catalogo"
   monedaSimbolo: "S/",
   broadcastDelayMs: 3000,
 });
