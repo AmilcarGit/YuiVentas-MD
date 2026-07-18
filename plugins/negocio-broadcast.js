@@ -1,4 +1,4 @@
-import { config } from "../config.js";
+import { obtenerAjustes } from "../db/ajustesDB.js";
 import { obtenerLista, listarListas } from "../db/contactosDB.js";
 
 export default {
@@ -8,6 +8,7 @@ export default {
   ownerOnly: true,
   run: async (sock, msg, args, context) => {
     const { chatId, body } = context;
+    const ajustes = obtenerAjustes();
 
     let resto = body.trim().split(/\s+/).slice(1);
     let nombreLista = "general";
@@ -25,8 +26,8 @@ export default {
         chatId,
         {
           text:
-            `❀ Uso: *${config.prefix}broadcast [lista] <mensaje>*\n\n` +
-            `Ejemplo: *${config.prefix}broadcast Tenemos 20% de descuento hoy 🎉*\n\n` +
+            `❀ Uso: *${ajustes.prefix}broadcast [lista] <mensaje>*\n\n` +
+            `Ejemplo: *${ajustes.prefix}broadcast Tenemos 20% de descuento hoy 🎉*\n\n` +
             `Listas disponibles: ${listasExistentes.join(", ") || "general"}`,
         },
         { quoted: msg }
@@ -38,7 +39,7 @@ export default {
     if (contactos.length === 0) {
       await sock.sendMessage(
         chatId,
-        { text: `📭 La lista *${nombreLista}* está vacía. Agrega números con *${config.prefix}addcontacto <numero>*.` },
+        { text: `📭 La lista *${nombreLista}* está vacía. Agrega números con *${ajustes.prefix}addcontacto <numero>*.` },
         { quoted: msg }
       );
       return;
@@ -60,7 +61,7 @@ export default {
       } catch (_) {
         fallidos++;
       }
-      await new Promise((r) => setTimeout(r, config.broadcastDelayMs));
+      await new Promise((r) => setTimeout(r, ajustes.broadcastDelayMs));
     }
 
     await sock.sendMessage(
