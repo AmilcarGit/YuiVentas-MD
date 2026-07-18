@@ -1,4 +1,4 @@
-import { config } from "../config.js";
+import { obtenerAjustes } from "../db/ajustesDB.js";
 import { agregarFAQ, eliminarFAQ, listarFAQ } from "../db/faqDB.js";
 
 export default {
@@ -8,6 +8,7 @@ export default {
   ownerOnly: true,
   run: async (sock, msg, args, context) => {
     const { chatId, body } = context;
+    const ajustes = obtenerAjustes();
     const comando = body.trim().split(/\s+/)[0].toLowerCase();
     const contenido = body.trim().split(/\s+/).slice(1).join(" ");
 
@@ -20,8 +21,8 @@ export default {
           chatId,
           {
             text:
-              `❀ Uso: *${config.prefix}addfaq palabra clave | respuesta*\n\n` +
-              `Ejemplo:\n*${config.prefix}addfaq horario | Atendemos de lunes a sábado, 9am a 7pm 🕒*\n\n` +
+              `❀ Uso: *${ajustes.prefix}addfaq palabra clave | respuesta*\n\n` +
+              `Ejemplo:\n*${ajustes.prefix}addfaq horario | Atendemos de lunes a sábado, 9am a 7pm 🕒*\n\n` +
               `Cuando alguien escriba un mensaje que *contenga* esa palabra, el bot responderá automáticamente.`,
           },
           { quoted: msg }
@@ -37,7 +38,7 @@ export default {
     if (comando === "delfaq") {
       const palabraClave = contenido.trim();
       if (!palabraClave) {
-        await sock.sendMessage(chatId, { text: `❀ Uso: *${config.prefix}delfaq palabra clave*` }, { quoted: msg });
+        await sock.sendMessage(chatId, { text: `❀ Uso: *${ajustes.prefix}delfaq palabra clave*` }, { quoted: msg });
         return;
       }
       const ok = eliminarFAQ(palabraClave);
@@ -54,7 +55,7 @@ export default {
     if (lista.length === 0) {
       await sock.sendMessage(
         chatId,
-        { text: `📭 Aún no tienes respuestas automáticas configuradas.\nAgrega una con *${config.prefix}addfaq palabra clave | respuesta*` },
+        { text: `📭 Aún no tienes respuestas automáticas configuradas.\nAgrega una con *${ajustes.prefix}addfaq palabra clave | respuesta*` },
         { quoted: msg }
       );
       return;
