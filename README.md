@@ -1,5 +1,7 @@
 <div align="center">
 
+<a href='https://postimg.cc/6T7FWfty' target='_blank'><img src='https://i.postimg.cc/59pJmsrq/file-000000000840820ead63693129bdf357.png' border='0' alt='file-000000000840820ead63693129bdf357'></a>
+
 # 🛍️ YuiVentas-MD
 
 **Bot de WhatsApp para Marketing y Ventas**, construido sobre [Baileys](https://github.com/WhiskeySockets/Baileys) (WhatsApp Multi-Device).
