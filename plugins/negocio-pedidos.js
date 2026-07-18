@@ -1,4 +1,4 @@
-import { config } from "../config.js";
+import { obtenerAjustes } from "../db/ajustesDB.js";
 import { listarPedidos, obtenerPedido, actualizarEstadoPedido } from "../db/pedidosDB.js";
 
 const ESTADOS_VALIDOS = ["pendiente", "confirmado", "enviado", "entregado", "cancelado"];
@@ -10,6 +10,7 @@ export default {
   ownerOnly: true,
   run: async (sock, msg, args, context) => {
     const { chatId } = context;
+    const ajustes = obtenerAjustes();
 
     // pedidos <ID> <estado>  -> actualizar estado
     if (args.length >= 2) {
@@ -52,9 +53,9 @@ export default {
 
     let texto = `📦 *PEDIDOS ACTIVOS* (${pedidos.length})\n━━━━━━━━━━━━━━━━━━\n\n`;
     for (const p of pedidos) {
-      texto += `🧾 #${p.id} — ${p.nombreCliente} — ${config.monedaSimbolo}${p.total.toFixed(2)} — _${p.estado}_\n`;
+      texto += `🧾 #${p.id} — ${p.nombreCliente} — ${ajustes.monedaSimbolo}${p.total.toFixed(2)} — _${p.estado}_\n`;
     }
-    texto += `\n✏️ Cambiar estado: *${config.prefix}pedidos <ID> <estado>*\n`;
+    texto += `\n✏️ Cambiar estado: *${ajustes.prefix}pedidos <ID> <estado>*\n`;
     texto += `Estados: ${ESTADOS_VALIDOS.join(", ")}`;
 
     await sock.sendMessage(chatId, { text: texto }, { quoted: msg });
