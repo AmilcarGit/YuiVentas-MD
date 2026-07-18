@@ -9,12 +9,16 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MENU_IMAGE_PATH = path.join(__dirname, "..", "assets", "menu.jpg");
 
-let imagenMenuCache = null;
-function obtenerImagenMenu() {
-  if (imagenMenuCache) return imagenMenuCache;
+function obtenerImagenMenu(negocio) {
+  if (negocio.menuImagen) {
+    try {
+      return fs.readFileSync(negocio.menuImagen);
+    } catch (_) {
+      // si la imagen personalizada no se puede leer, cae a la de por defecto
+    }
+  }
   try {
-    imagenMenuCache = fs.readFileSync(MENU_IMAGE_PATH);
-    return imagenMenuCache;
+    return fs.readFileSync(MENU_IMAGE_PATH);
   } catch (_) {
     return null;
   }
@@ -73,6 +77,8 @@ function menuDueno(p, negocio) {
   t += `  ${p}setbienvenida <mensaje>\n`;
   t += `  ${p}setpago <datos>\n`;
   t += `  ${p}setmenu <texto> — personaliza el menú de clientes\n`;
+  t += `  ${p}setmenuimg — responde a una foto para usarla en el menú\n`;
+  t += `  ${p}resetmenuimg — volver a la imagen por defecto\n`;
   t += `  ${p}negocio — ver configuración actual\n\n`;
 
   t += `🔧 *AJUSTES DEL BOT*\n`;
@@ -80,6 +86,11 @@ function menuDueno(p, negocio) {
   t += `  ${p}setmoneda <símbolo>\n`;
   t += `  ${p}addowner / delowner <numero>\n`;
   t += `  ${p}ajustes — ver todo\n\n`;
+
+  t += `👥 *GRUPOS* (el bot está apagado en grupos por defecto)\n`;
+  t += `  ${p}activargrupo — escríbelo DENTRO del grupo a activar\n`;
+  t += `  ${p}desactivargrupo — apagarlo en ese grupo\n`;
+  t += `  ${p}gruposactivos — ver en cuáles está prendido\n\n`;
 
   t += `─────────────────────\n`;
   t += `Tus clientes solo ven el menú de compra 🙂`;
@@ -99,7 +110,7 @@ export default {
     const numero = await resolverNumeroReal(sock, sender, msg);
     const texto = esOwner(numero) ? menuDueno(p, negocio) : menuCliente(p, negocio);
 
-    const imagen = obtenerImagenMenu();
+    const imagen = obtenerImagenMenu(negocio);
     if (imagen) {
       await sock.sendMessage(chatId, { image: imagen, caption: texto }, { quoted: msg });
     } else {
