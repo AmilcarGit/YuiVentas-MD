@@ -245,7 +245,8 @@ async function startBot() {
       }
     }
 
-    // --- Enrutador de comandos (con prefijo configurable por WhatsApp) ---
+    // --- Enrutador de comandos (con prefijo configurable por WhatsApp;
+    // si el prefijo está vacío, los comandos se reconocen sin símbolo) ---
     const { prefix } = obtenerAjustes();
 
     if (texto.startsWith(prefix)) {
@@ -254,8 +255,11 @@ async function startBot() {
       const args = sinPrefijo.split(/\s+/).slice(1);
       const context = { sender, chatId, body: sinPrefijo, allPlugins: plugins };
 
+      let comandoEncontrado = false;
+
       for (const plugin of plugins) {
         if (plugin.command.includes(primeraPalabra)) {
+          comandoEncontrado = true;
           try {
             const puedeContinuar = await pasaFiltros(sock, msg, plugin, context);
             if (!puedeContinuar) break;
@@ -266,12 +270,13 @@ async function startBot() {
           break;
         }
       }
-      return;
+
+      if (comandoEncontrado) return;
     }
 
-    // --- Sin prefijo: respuestas automáticas por palabra clave (FAQ).
-    // Nunca se dispara con los propios mensajes del bot, para no entrar
-    // en bucle si la respuesta configurada contiene su propia palabra clave. ---
+    // --- Ningún comando coincidió: respuestas automáticas por palabra
+    // clave (FAQ). Nunca se dispara con los propios mensajes del bot,
+    // para no entrar en bucle si la respuesta contiene su propia palabra clave. ---
     if (msg.key.fromMe) return;
 
     const respuestaFAQ = buscarRespuesta(texto);
