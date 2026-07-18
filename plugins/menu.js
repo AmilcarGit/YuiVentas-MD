@@ -1,4 +1,5 @@
 import { config } from "../config.js";
+import { obtenerAjustes } from "../db/ajustesDB.js";
 import { obtenerNegocio } from "../db/negocioDB.js";
 import fs from "fs";
 import path from "path";
@@ -24,8 +25,9 @@ export default {
   description: "Muestra el menú de comandos.",
   run: async (sock, msg, args, context) => {
     const { chatId } = context;
+    const ajustes = obtenerAjustes();
     const negocio = obtenerNegocio();
-    const p = config.prefix;
+    const p = ajustes.prefix;
 
     let texto = `🛍️ *${negocio.nombre.toUpperCase()}*\n`;
     texto += `Bot de ventas — ${config.botName}\n`;
@@ -50,7 +52,8 @@ export default {
     texto += `▸ ${p}broadcast [lista] <mensaje> — envío masivo\n`;
     texto += `▸ ${p}addcontacto / delcontacto / listas / importargrupo\n`;
     texto += `▸ ${p}setnegocio / setbienvenida / setpago / negocio\n`;
-    texto += `▸ ${p}addfaq / delfaq / verfaq — respuestas automáticas\n\n`;
+    texto += `▸ ${p}addfaq / delfaq / verfaq — respuestas automáticas\n`;
+    texto += `▸ ${p}ajustes — ver/cambiar prefijo, moneda y dueños\n\n`;
 
     texto += `━━━━━━━━━━━━━━━━━━\n`;
     texto += `Prefijo de comandos: *${p}*`;
