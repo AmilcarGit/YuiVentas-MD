@@ -17,7 +17,7 @@ import { config } from "./config.js";
 import { loadPlugins } from "./pluginLoader.js";
 import { pasaFiltros, resolverNumeroReal } from "./middlewares.js";
 import { obtenerNegocio, yaSaludoA, marcarSaludado } from "./db/negocioDB.js";
-import { obtenerAjustes, asegurarPrimerOwner } from "./db/ajustesDB.js";
+import { obtenerAjustes, asegurarPrimerOwner, agregarOwner } from "./db/ajustesDB.js";
 import { buscarRespuesta } from "./db/faqDB.js";
 import { iniciarLimpiezaAutomatica } from "./limpieza.js";
 
@@ -129,6 +129,18 @@ async function startBot() {
       setTimeout(() => pedirCodigoConReintentos(), 2000);
     } else {
       console.log(chalk.yellow("\nEscanea el código QR que aparecerá arriba con WhatsApp > Dispositivos vinculados.\n"));
+    }
+
+    const otroOwner = await question(
+      chalk.yellow(
+        "\n👑 ¿Quieres agregar OTRO número como dueño del bot además del tuyo? (con código de país, sin + ni espacios)\n" +
+          "Déjalo vacío y presiona Enter para omitir esto.\nNúmero: "
+      )
+    );
+    const numeroOwnerExtra = otroOwner.trim().replace(/\D/g, "");
+    if (numeroOwnerExtra) {
+      agregarOwner(numeroOwnerExtra);
+      console.log(chalk.greenBright(`👑 ${numeroOwnerExtra} quedará registrado como dueño del bot en cuanto conecte.`));
     }
   }
 
