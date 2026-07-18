@@ -5,6 +5,7 @@ const store = crearStore("ajustes.json", {
   prefix: "", // vacío = comandos sin símbolo, ej. "catalogo" en vez de ".catalogo"
   monedaSimbolo: "S/",
   broadcastDelayMs: 3000,
+  gruposActivos: [], // JIDs de grupos donde el bot SÍ responde (vacío = apagado en todos)
 });
 
 export function obtenerAjustes() {
@@ -55,4 +56,27 @@ export function asegurarPrimerOwner(numero) {
     return true;
   }
   return false;
+}
+
+export function esGrupoActivo(chatId) {
+  const ajustes = obtenerAjustes();
+  return (ajustes.gruposActivos || []).includes(chatId);
+}
+
+export function activarGrupo(chatId) {
+  const ajustes = obtenerAjustes();
+  if (!ajustes.gruposActivos) ajustes.gruposActivos = [];
+  if (ajustes.gruposActivos.includes(chatId)) return false;
+  ajustes.gruposActivos.push(chatId);
+  store.escribir(ajustes);
+  return true;
+}
+
+export function desactivarGrupo(chatId) {
+  const ajustes = obtenerAjustes();
+  const idx = (ajustes.gruposActivos || []).indexOf(chatId);
+  if (idx === -1) return false;
+  ajustes.gruposActivos.splice(idx, 1);
+  store.escribir(ajustes);
+  return true;
 }
