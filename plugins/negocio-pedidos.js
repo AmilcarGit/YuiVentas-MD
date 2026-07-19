@@ -7,7 +7,7 @@ export default {
   command: ["pedidos", "orders"],
   category: "Negocio",
   description: "Ver pedidos o actualizar su estado. Uso: pedidos  ·  pedidos <ID> <estado>",
-  ownerOnly: true,
+  vendedorOnly: true,
   run: async (sock, msg, args, context) => {
     const { chatId } = context;
     const ajustes = obtenerAjustes();
@@ -53,10 +53,12 @@ export default {
 
     let texto = `📦 *PEDIDOS ACTIVOS* (${pedidos.length})\n━━━━━━━━━━━━━━━━━━\n\n`;
     for (const p of pedidos) {
-      texto += `🧾 #${p.id} — ${p.nombreCliente} — ${ajustes.monedaSimbolo}${p.total.toFixed(2)} — _${p.estado}_\n`;
+      const atendido = p.atendidoPor ? ` 🙋 ${p.atendidoPor.nombre}` : " 🆓 libre";
+      texto += `🧾 #${p.id} — ${p.nombreCliente} — ${ajustes.monedaSimbolo}${p.total.toFixed(2)} — _${p.estado}_ —${atendido}\n`;
     }
     texto += `\n✏️ Cambiar estado: *${ajustes.prefix}pedidos <ID> <estado>*\n`;
-    texto += `Estados: ${ESTADOS_VALIDOS.join(", ")}`;
+    texto += `Estados: ${ESTADOS_VALIDOS.join(", ")}\n`;
+    texto += `✋ Atender uno: *${ajustes.prefix}tomar <ID>*  ·  soltarlo: *${ajustes.prefix}liberar <ID>*`;
 
     await sock.sendMessage(chatId, { text: texto }, { quoted: msg });
   },
