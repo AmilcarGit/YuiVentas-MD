@@ -2,7 +2,7 @@ import { crearStore } from "./jsonDB.js";
 
 const store = crearStore("pedidos.json", { ultimoId: 0, pedidos: {} });
 
-export function crearPedido({ numero, nombreCliente, items, total }) {
+export function crearPedido({ numero, nombreCliente, items, total, cupon = null, descuento = 0, subtotal = null }) {
   const data = store.leer();
   const id = String(data.ultimoId + 1).padStart(4, "0");
 
@@ -12,6 +12,9 @@ export function crearPedido({ numero, nombreCliente, items, total }) {
     numero,
     nombreCliente: nombreCliente || numero,
     items, // [{ productoId, nombre, precio, cantidad, subtotal }]
+    subtotal: subtotal !== null ? subtotal : total,
+    cupon, // código del cupón usado, o null
+    descuento, // monto de descuento aplicado
     total,
     estado: "pendiente", // pendiente | confirmado | enviado | entregado | cancelado
     creadoEn: Date.now(),
