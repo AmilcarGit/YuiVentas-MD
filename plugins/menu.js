@@ -33,13 +33,15 @@ function menuCliente(p, negocio) {
 
   t += `*01 · CATÁLOGO* 🗂️\n`;
   t += `▸ ${p}catalogo · ver todos los productos\n`;
-  t += `▸ ${p}ver <ID> · ver el detalle de uno\n\n`;
+  t += `▸ ${p}ver <ID> · ver el detalle de uno\n`;
+  t += `▸ ${p}buscar <palabra> · buscar por nombre\n\n`;
 
   t += `*02 · CARRITO* 🛒\n`;
   t += `▸ ${p}agregar <ID> <cant> · añadir\n`;
   t += `▸ ${p}carrito · ver lo que llevas\n`;
   t += `▸ ${p}quitar <ID> · quitar un producto\n`;
-  t += `▸ ${p}vaciarcarrito · vaciar todo\n\n`;
+  t += `▸ ${p}vaciarcarrito · vaciar todo\n`;
+  t += `▸ ${p}cupon <código> · aplicar un descuento\n\n`;
 
   t += `*03 · COMPRA* ✅\n`;
   t += `▸ ${p}confirmar · confirmar tu pedido\n\n`;
@@ -62,9 +64,10 @@ function menuDueno(p, negocio) {
   t += `▸ ${p}fotoproducto <ID> · responde a una imagen\n\n`;
 
   t += `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n`;
-  t += `*02 · PEDIDOS* 📦\n`;
+  t += `*02 · PEDIDOS Y VENTAS* 📦\n`;
   t += `▸ ${p}pedidos · ver pedidos activos\n`;
-  t += `▸ ${p}pedidos <ID> <estado> · cambiar estado\n\n`;
+  t += `▸ ${p}pedidos <ID> <estado> · cambiar estado\n`;
+  t += `▸ ${p}reporte [hoy|semana|mes] · ver ventas\n\n`;
 
   t += `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n`;
   t += `*03 · MARKETING* 📣\n`;
@@ -73,7 +76,9 @@ function menuDueno(p, negocio) {
   t += `▸ ${p}listas · ver tus listas de contactos\n`;
   t += `▸ ${p}importargrupo [lista] · importar un grupo\n`;
   t += `▸ ${p}addfaq clave | respuesta · auto-respuesta\n`;
-  t += `▸ ${p}delfaq clave  /  ${p}verfaq\n\n`;
+  t += `▸ ${p}delfaq clave  /  ${p}verfaq\n`;
+  t += `▸ ${p}addcupon CODIGO | valor | usos · crear cupón\n`;
+  t += `▸ ${p}delcupon CODIGO  /  ${p}vercupones\n\n`;
 
   t += `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n`;
   t += `*04 · NEGOCIO Y MENÚ* 🏷️\n`;
