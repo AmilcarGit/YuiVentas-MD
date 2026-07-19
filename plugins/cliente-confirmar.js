@@ -117,11 +117,11 @@ export default {
       textoOwner += `Cupón *${cuponUsado}*: -${ajustes.monedaSimbolo}${descuento.toFixed(2)}\n`;
     }
     textoOwner += `\n💰 Total: *${ajustes.monedaSimbolo}${pedido.total.toFixed(2)}*\n`;
-    textoOwner += `\nEscribe *${ajustes.prefix}pedidos* para ver todos los pedidos pendientes.`;
+    textoOwner += `\nEscribe *${ajustes.prefix}pedidos* para ver todos los pedidos pendientes, o *${ajustes.prefix}tomar ${pedido.id}* para atender este directamente.`;
 
-    for (const ownerNumero of ajustes.owners) {
+    for (const numeroEquipo of [...ajustes.owners, ...(ajustes.vendedores || [])]) {
       try {
-        await sock.sendMessage(`${ownerNumero}@s.whatsapp.net`, { text: textoOwner });
+        await sock.sendMessage(`${numeroEquipo}@s.whatsapp.net`, { text: textoOwner });
       } catch (_) {}
     }
   },
