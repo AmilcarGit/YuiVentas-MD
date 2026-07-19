@@ -1,5 +1,5 @@
 import { config } from "../config.js";
-import { obtenerAjustes, esOwner } from "../db/ajustesDB.js";
+import { obtenerAjustes, esOwner, esVendedor } from "../db/ajustesDB.js";
 import { obtenerNegocio } from "../db/negocioDB.js";
 import { resolverNumeroReal } from "../middlewares.js";
 import fs from "fs";
@@ -7,7 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const MENU_IMAGE_PATH = path.join(__dirname, "..", "assets", "menu1.jpg");
+const MENU_IMAGE_PATH = path.join(__dirname, "..", "assets", "menu.jpg");
 
 function obtenerImagenMenu(negocio) {
   if (negocio.menuImagen) {
@@ -104,7 +104,34 @@ function menuDueno(p, negocio) {
   t += `▸ ${p}gruposactivos · ver cuáles están prendidos\n\n`;
 
   t += `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n`;
+  t += `*07 · EQUIPO DE VENTAS* 🧑‍💼\n`;
+  t += `▸ ${p}addvendedor <numero> · dar acceso a pedidos\n`;
+  t += `▸ ${p}delvendedor <numero> · quitarlo\n`;
+  t += `▸ ${p}vervendedores · ver el equipo\n`;
+  t += `▸ ${p}tomar <ID> / ${p}liberar <ID> · atender un pedido\n\n`;
+
+  t += `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n`;
   t += `Tus clientes solo ven el menú de compra 🙂`;
+  return t;
+}
+
+function menuVendedor(p, negocio) {
+  let t = `┏━━━━━━━━━━━━━━━━━━━┓\n`;
+  t += `   🧑‍💼 *EQUIPO DE VENTAS*\n`;
+  t += `   ${negocio.nombre}\n`;
+  t += `┗━━━━━━━━━━━━━━━━━━━┛\n\n`;
+
+  t += `*01 · PEDIDOS* 📦\n`;
+  t += `▸ ${p}pedidos · ver pedidos activos\n`;
+  t += `▸ ${p}pedidos <ID> <estado> · cambiar estado\n\n`;
+
+  t += `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n`;
+  t += `*02 · ATENCIÓN* ✋\n`;
+  t += `▸ ${p}tomar <ID> · atender un pedido tú solo\n`;
+  t += `▸ ${p}liberar <ID> · soltarlo para el equipo\n\n`;
+
+  t += `┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n`;
+  t += `No tienes acceso a productos, marketing ni ajustes — solo el dueño puede tocar eso.`;
   return t;
 }
 
@@ -119,7 +146,15 @@ export default {
     const p = ajustes.prefix;
 
     const numero = await resolverNumeroReal(sock, sender, msg);
-    const texto = esOwner(numero) ? menuDueno(p, negocio) : menuCliente(p, negocio);
+
+    let texto;
+    if (esOwner(numero)) {
+      texto = menuDueno(p, negocio);
+    } else if (esVendedor(numero)) {
+      texto = menuVendedor(p, negocio);
+    } else {
+      texto = menuCliente(p, negocio);
+    }
 
     const imagen = obtenerImagenMenu(negocio);
     if (imagen) {
