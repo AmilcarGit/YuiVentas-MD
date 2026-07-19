@@ -125,7 +125,7 @@ npm start
 ```bash
 brew install node git
 
-git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
+git clone https://github.com/AmilcarGit/YuiVentas-MD.git
 cd YuiVentas-MD
 npm install
 npm start
@@ -147,7 +147,7 @@ Si quieres que el bot viva en un servicio administrado en vez de un servidor pro
 El proyecto incluye un `Dockerfile` listo para usar.
 
 ```bash
-git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
+git clone https://github.com/AmilcarGit/YuiVentas-MD.git
 cd YuiVentas-MD
 
 docker build -t yuiventas-md .
