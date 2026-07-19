@@ -3,6 +3,14 @@ import { calcularResumen, vaciarCarrito } from "../db/carritoDB.js";
 import { descontarStock } from "../db/productosDB.js";
 import { crearPedido } from "../db/pedidosDB.js";
 import { resolverNumeroReal } from "../middlewares.js";
+import {
+  obtenerCuponDeCliente,
+  obtenerCupon,
+  cuponValido,
+  calcularDescuento,
+  registrarUso,
+  quitarCuponDeCliente,
+} from "../db/cuponesDB.js";
 
 export default {
   command: ["confirmar", "checkout", "pedir"],
@@ -45,6 +53,28 @@ export default {
       nombreCliente = contacto?.name || contacto?.notify || numero;
     } catch (_) {}
 
+    // Si el cliente tiene un cupón guardado (con "cupon <código>"), se
+    // aplica aquí. Si ya no es válido (se agotó, lo desactivaron, etc.)
+    // simplemente se ignora y se le avisa, sin bloquear la compra.
+    let cuponUsado = null;
+    let descuento = 0;
+    let avisoCupon = "";
+
+    const codigoGuardado = obtenerCuponDeCliente(numero);
+    if (codigoGuardado) {
+      const cupon = obtenerCupon(codigoGuardado);
+      if (cupon && cuponValido(cupon)) {
+        descuento = calcularDescuento(cupon, resumen.total);
+        cuponUsado = cupon.codigo;
+        registrarUso(cupon.codigo);
+      } else {
+        avisoCupon = `\n⚠️ Tu cupón *${codigoGuardado}* ya no estaba disponible, así que no se aplicó.`;
+      }
+      quitarCuponDeCliente(numero);
+    }
+
+    const totalFinal = resumen.total - descuento;
+
     const pedido = crearPedido({
       numero,
       nombreCliente,
@@ -55,7 +85,10 @@ export default {
         cantidad: i.cantidad,
         subtotal: i.subtotal,
       })),
-      total: resumen.total,
+      subtotal: resumen.total,
+      cupon: cuponUsado,
+      descuento,
+      total: totalFinal,
     });
 
     vaciarCarrito(numero);
@@ -65,7 +98,11 @@ export default {
     for (const item of pedido.items) {
       textoCliente += `▸ ${item.cantidad}x ${item.nombre} — ${ajustes.monedaSimbolo}${item.subtotal.toFixed(2)}\n`;
     }
-    textoCliente += `\n💰 Total: *${ajustes.monedaSimbolo}${pedido.total.toFixed(2)}*\n\n`;
+    if (cuponUsado) {
+      textoCliente += `\nSubtotal: ${ajustes.monedaSimbolo}${pedido.subtotal.toFixed(2)}\n`;
+      textoCliente += `Cupón *${cuponUsado}*: -${ajustes.monedaSimbolo}${descuento.toFixed(2)}\n`;
+    }
+    textoCliente += `\n💰 Total: *${ajustes.monedaSimbolo}${pedido.total.toFixed(2)}*${avisoCupon}\n\n`;
     textoCliente += `En breve te contactamos para coordinar el pago y la entrega. ¡Gracias por tu compra! 🌸`;
 
     await sock.sendMessage(chatId, { text: textoCliente }, { quoted: msg });
@@ -74,6 +111,10 @@ export default {
     textoOwner += `👤 Cliente: ${nombreCliente} (wa.me/${numero})\n\n`;
     for (const item of pedido.items) {
       textoOwner += `▸ ${item.cantidad}x ${item.nombre} — ${ajustes.monedaSimbolo}${item.subtotal.toFixed(2)}\n`;
+    }
+    if (cuponUsado) {
+      textoOwner += `\nSubtotal: ${ajustes.monedaSimbolo}${pedido.subtotal.toFixed(2)}\n`;
+      textoOwner += `Cupón *${cuponUsado}*: -${ajustes.monedaSimbolo}${descuento.toFixed(2)}\n`;
     }
     textoOwner += `\n💰 Total: *${ajustes.monedaSimbolo}${pedido.total.toFixed(2)}*\n`;
     textoOwner += `\nEscribe *${ajustes.prefix}pedidos* para ver todos los pedidos pendientes.`;
