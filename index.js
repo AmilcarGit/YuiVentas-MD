@@ -17,9 +17,10 @@ import { config } from "./config.js";
 import { loadPlugins } from "./pluginLoader.js";
 import { pasaFiltros, resolverNumeroReal } from "./middlewares.js";
 import { obtenerNegocio, yaSaludoA, marcarSaludado } from "./db/negocioDB.js";
-import { obtenerAjustes, asegurarPrimerOwner, agregarOwner, esGrupoActivo } from "./db/ajustesDB.js";
+import { obtenerAjustes, asegurarPrimerOwner, agregarOwner, esGrupoActivo, esVendedorOAdmin } from "./db/ajustesDB.js";
 import { buscarRespuesta } from "./db/faqDB.js";
 import { iniciarLimpiezaAutomatica } from "./limpieza.js";
+import { evaluarMensaje } from "./antiSpam.js";
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const question = (text) => new Promise((resolve) => rl.question(text, resolve));
@@ -233,6 +234,21 @@ async function startBot() {
 
     const esGrupo = chatId.endsWith("@g.us");
     const texto = body.trim();
+
+    // --- Anti-spam: limita cuántos mensajes por minuto puede mandar un
+    // mismo número. El dueño y el equipo de ventas quedan exceptuados,
+    // para que nunca se vean bloqueados a sí mismos. ---
+    if (!msg.key.fromMe && !esVendedorOAdmin(numeroLimpio)) {
+      const resultado = evaluarMensaje(numeroLimpio);
+      if (resultado.bloqueado) {
+        if (resultado.avisar) {
+          await enviarConReintento(sock, chatId, {
+            text: "⏳ Estás enviando mensajes muy rápido. Espera un momento antes de volver a escribir.",
+          });
+        }
+        return;
+      }
+    }
 
     // --- Enrutador de comandos (con prefijo configurable por WhatsApp;
     // si el prefijo está vacío, los comandos se reconocen sin símbolo) ---
