@@ -1,4 +1,4 @@
-import { esOwner as esOwnerDinamico } from "./db/ajustesDB.js";
+import { esOwner as esOwnerDinamico, esVendedorOAdmin } from "./db/ajustesDB.js";
 
 export function esOwner(numero) {
   return esOwnerDinamico(numero);
@@ -192,6 +192,15 @@ export async function pasaFiltros(sock, msg, plugin, context) {
     await sock.sendMessage(
       chatId,
       { text: "❀ Este comando es exclusivo del *creador* del bot." },
+      { quoted: msg }
+    );
+    return false;
+  }
+
+  if (plugin.vendedorOnly && !esVendedorOAdmin(numero)) {
+    await sock.sendMessage(
+      chatId,
+      { text: "❀ Este comando es exclusivo del *equipo de ventas* del negocio." },
       { quoted: msg }
     );
     return false;
