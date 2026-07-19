@@ -17,6 +17,7 @@ export function crearPedido({ numero, nombreCliente, items, total, cupon = null,
     descuento, // monto de descuento aplicado
     total,
     estado: "pendiente", // pendiente | confirmado | enviado | entregado | cancelado
+    atendidoPor: null, // { numero, nombre } del vendedor que tomó este pedido, o null
     creadoEn: Date.now(),
   };
 
@@ -42,4 +43,26 @@ export function actualizarEstadoPedido(id, estado) {
   data.pedidos[id].estado = estado;
   store.escribir(data);
   return data.pedidos[id];
+}
+
+/** Asigna un pedido a un vendedor. Falla si ya lo tomó alguien más. */
+export function tomarPedido(id, numero, nombre) {
+  const data = store.leer();
+  const pedido = data.pedidos[id];
+  if (!pedido) return { ok: false, motivo: "no_existe" };
+  if (pedido.atendidoPor && pedido.atendidoPor.numero !== numero) {
+    return { ok: false, motivo: "ya_tomado", pedido };
+  }
+  pedido.atendidoPor = { numero, nombre: nombre || numero };
+  store.escribir(data);
+  return { ok: true, pedido };
+}
+
+export function liberarPedido(id) {
+  const data = store.leer();
+  const pedido = data.pedidos[id];
+  if (!pedido) return { ok: false, motivo: "no_existe" };
+  pedido.atendidoPor = null;
+  store.escribir(data);
+  return { ok: true, pedido };
 }
