@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import url from "url";
 import chalk from "chalk";
-import { config } from "./config.js";
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const pluginsPath = path.join(__dirname, "plugins");
@@ -11,22 +10,6 @@ const ANCHO = 48;
 const LINEA = "─".repeat(ANCHO);
 
 let ultimoEstadoCarga = { invalidos: [], errores: [] };
-
-const TITULO_GRANDE = "𝗧𝗛𝗘𝗬𝗨𝗜-𝗠𝗗";
-const COLORES_LED = ["#ff2fb0", "#ff5fc2", "#ff8fd4", "#ffb8e6", "#e07bff", "#c04fff", "#a020f0", "#ff2fb0", "#ff5fc2"];
-
-function tituloLed3D() {
-  const letras = [...TITULO_GRANDE];
-
-  const frente = letras
-    .map((c, i) => chalk.hex(COLORES_LED[i % COLORES_LED.length]).bold(c))
-    .join("");
-
-  const sombra = chalk.hex("#3a0a4a")(TITULO_GRANDE);
-  const brillo = chalk.hex("#ff2fb0")("▔".repeat(TITULO_GRANDE.length + 4));
-
-  return `\n   ${frente}\n    ${sombra}\n   ${brillo}\n`;
-}
 
 export function obtenerEstadoUltimaCarga() {
   return ultimoEstadoCarga;
@@ -54,8 +37,6 @@ export async function loadPlugins() {
 
   const total = files.length || 1;
 
-  console.log(tituloLed3D());
-  console.log(chalk.hex("#d9a9ff")(`  por ${config.creator}`));
   console.log(chalk.hex("#ff9ecf")(`  ${LINEA}`));
   console.log("");
 
