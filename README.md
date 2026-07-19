@@ -78,7 +78,7 @@ La forma más popular para tener el bot corriendo directo desde el celular, grat
 pkg update && pkg upgrade -y
 pkg install nodejs-lts git -y
 
-git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
+git clone https://github.com/AmilcarGit/YuiVentas-MD.git
 cd YuiVentas-MD
 npm install
 npm start
@@ -95,7 +95,7 @@ sudo apt update && sudo apt install -y curl git
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
-git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
+git clone https://github.com/AmilcarGit/YuiVentas-MD.git
 cd YuiVentas-MD
 npm install
 
@@ -114,7 +114,7 @@ Comandos útiles de PM2: `pm2 logs yuiventas` (ver la consola), `pm2 restart yui
 2. Abre PowerShell o CMD en la carpeta donde quieras el proyecto:
 
 ```powershell
-git clone https://github.com/TU-USUARIO/YuiVentas-MD.git
+git clone https://github.com/AmilcarGit/YuiVentas-MD.git
 cd YuiVentas-MD
 npm install
 npm start
